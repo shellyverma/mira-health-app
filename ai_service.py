@@ -1,9 +1,10 @@
 import os
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 
 load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 def get_health_prediction(glucose: float, haemoglobin: float, cholesterol: float) -> str:
     """
@@ -11,7 +12,6 @@ def get_health_prediction(glucose: float, haemoglobin: float, cholesterol: float
     Falls back to rule-based logic if the API is unavailable.
     """
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
         prompt = f"""You are a medical AI assistant. A patient has submitted the following blood test results:
 
 - Glucose: {glucose} mg/dL  (Normal fasting range: 70–99 mg/dL)
@@ -24,7 +24,10 @@ Based on these values, write a concise health assessment in 2–3 sentences.
 - Do NOT recommend specific medications or dosages.
 - Be professional, clear, and compassionate."""
 
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt
+        )
         return response.text.strip()
 
     except Exception:
