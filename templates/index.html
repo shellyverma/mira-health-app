@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MIRA – Patient Records</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="top-nav">
+  <div class="container-fluid px-4 d-flex align-items-center">
+    <div class="nav-brand">
+      <span class="nav-logo">M</span>
+      <div>
+        <div class="nav-title">MIRA</div>
+        <div class="nav-sub">Medical Intelligence &amp; Robotic Automation</div>
+      </div>
+    </div>
+    <div class="ms-auto d-flex align-items-center gap-3">
+      <span class="nav-badge"><i class="bi bi-activity me-1"></i>Health Platform</span>
+      <a href="/add" class="btn-primary-nav">
+        <i class="bi bi-plus-lg me-1"></i>Add Patient
+      </a>
+    </div>
+  </div>
+</nav>
+
+<div class="main-content">
+  <div class="container-fluid px-4">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-3">
+        {% for category, message in messages %}
+          <div class="flash-msg flash-{{ category }}">
+            <i class="bi bi-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'x-circle' if category == 'danger' else 'info-circle' }} me-2"></i>
+            <span>{{ message|safe }}</span>
+            <button class="flash-close" onclick="this.parentElement.remove()">×</button>
+          </div>
+        {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Patient Records</h1>
+        <p class="page-desc">Manage patient blood test data with AI-powered health predictions.</p>
+      </div>
+      <div class="stats-chips">
+        <div class="chip chip-blue"><i class="bi bi-people me-1"></i>{{ patients|length }} Total Patients</div>
+      </div>
+    </div>
+
+    {% if patients %}
+
+    <!-- Search bar -->
+    <div class="search-bar mb-3">
+      <i class="bi bi-search search-icon"></i>
+      <input type="text" id="searchInput" placeholder="Search by name or email…" class="search-input" onkeyup="filterTable()"/>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+      <table class="data-table" id="patientTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Full Name</th>
+            <th>Date of Birth</th>
+            <th>Email</th>
+            <th>Glucose <span class="unit">mg/dL</span></th>
+            <th>Haemoglobin <span class="unit">g/dL</span></th>
+            <th>Cholesterol <span class="unit">mg/dL</span></th>
+            <th>AI Health Remarks</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in patients %}
+          <tr>
+            <td><span class="id-badge">{{ p['id'] }}</span></td>
+            <td>
+              <div class="patient-name">{{ p['full_name'] }}</div>
+            </td>
+            <td class="text-muted">{{ p['dob'] }}</td>
+            <td><a href="mailto:{{ p['email'] }}" class="email-link">{{ p['email'] }}</a></td>
+
+            <!-- Glucose -->
+            <td>
+              {% if p['glucose'] > 126 %}
+                <span class="val-badge val-high">{{ p['glucose'] }} <i class="bi bi-arrow-up-short"></i></span>
+              {% elif p['glucose'] > 100 %}
+                <span class="val-badge val-warn">{{ p['glucose'] }} <i class="bi bi-dash"></i></span>
+              {% else %}
+                <span class="val-badge val-ok">{{ p['glucose'] }}</span>
+              {% endif %}
+            </td>
+
+            <!-- Haemoglobin -->
+            <td>
+              {% if p['haemoglobin'] < 12 %}
+                <span class="val-badge val-high">{{ p['haemoglobin'] }} <i class="bi bi-arrow-down-short"></i></span>
+              {% elif p['haemoglobin'] > 17.5 %}
+                <span class="val-badge val-warn">{{ p['haemoglobin'] }} <i class="bi bi-arrow-up-short"></i></span>
+              {% else %}
+                <span class="val-badge val-ok">{{ p['haemoglobin'] }}</span>
+              {% endif %}
+            </td>
+
+            <!-- Cholesterol -->
+            <td>
+              {% if p['cholesterol'] > 240 %}
+                <span class="val-badge val-high">{{ p['cholesterol'] }} <i class="bi bi-arrow-up-short"></i></span>
+              {% elif p['cholesterol'] > 200 %}
+                <span class="val-badge val-warn">{{ p['cholesterol'] }} <i class="bi bi-dash"></i></span>
+              {% else %}
+                <span class="val-badge val-ok">{{ p['cholesterol'] }}</span>
+              {% endif %}
+            </td>
+
+            <!-- Remarks -->
+            <td>
+              <div class="remark-cell">
+                <span class="remark-preview">{{ p['remarks'][:70] }}{% if p['remarks']|length > 70 %}…{% endif %}</span>
+                <button class="btn-view-detail"
+                  onclick="showDetail({{ p['id'] }}, '{{ p['full_name']|replace("'","\\'")}}')"
+                  title="View full remarks">
+                  <i class="bi bi-eye"></i> View
+                </button>
+              </div>
+            </td>
+
+            <!-- Actions -->
+            <td>
+              <div class="action-btns">
+                <a href="/edit/{{ p['id'] }}" class="btn-action btn-edit" title="Edit">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <!-- Delete form (POST method — secure) -->
+                <form action="/delete/{{ p['id'] }}" method="POST" style="display:inline"
+                      onsubmit="return confirm('Delete {{ p['full_name'] }}? This cannot be undone.')">
+                  <button type="submit" class="btn-action btn-del" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <!-- No results message -->
+      <div id="noResults" class="no-results d-none">
+        <i class="bi bi-search fs-3 mb-2 d-block text-muted"></i>
+        No patients match your search.
+      </div>
+    </div>
+
+    {% else %}
+    <!-- Empty state -->
+    <div class="empty-state">
+      <div class="empty-icon">🏥</div>
+      <h4>No patient records found</h4>
+      <p>Start by adding your first patient record.</p>
+      <a href="/add" class="btn-primary-nav mt-2">
+        <i class="bi bi-plus-lg me-1"></i>Add First Patient
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<!-- ── DETAIL MODAL ── -->
+<div class="modal-overlay" id="detailModal" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modalName">Patient Name</div>
+        <div class="modal-sub">AI Health Prediction Remarks</div>
+      </div>
+      <button class="modal-close" onclick="closeModalDirect()">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="modalRemarks" class="remarks-full">Loading…</div>
+    </div>
+    <div class="modal-foot">
+      <span class="ai-tag"><i class="bi bi-robot me-1"></i>Generated by Gemini AI</span>
+      <button class="btn-outline-sm" onclick="closeModalDirect()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ── Search / Filter ──
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const rows = document.querySelectorAll('#patientTable tbody tr');
+  let visible = 0;
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    const show = text.includes(q);
+    row.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('noResults').classList.toggle('d-none', visible > 0);
+}
+
+// ── Detail Modal ──
+async function showDetail(id, name) {
+  document.getElementById('modalName').textContent = name;
+  document.getElementById('modalRemarks').textContent = 'Loading…';
+  document.getElementById('detailModal').classList.add('active');
+
+  try {
+    const res = await fetch(`/patient/${id}`);
+    const data = await res.json();
+    document.getElementById('modalRemarks').textContent = data.remarks || 'No remarks available.';
+  } catch {
+    document.getElementById('modalRemarks').textContent = 'Could not load remarks.';
+  }
+}
+
+function closeModal(e) {
+  if (e.target.id === 'detailModal') closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('detailModal').classList.remove('active');
+}
+</script>
+</body>
+</html>

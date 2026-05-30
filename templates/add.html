@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MIRA – Add Patient</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="top-nav">
+  <div class="container-fluid px-4 d-flex align-items-center">
+    <div class="nav-brand">
+      <span class="nav-logo">M</span>
+      <div>
+        <div class="nav-title">MIRA</div>
+        <div class="nav-sub">Medical Intelligence &amp; Robotic Automation</div>
+      </div>
+    </div>
+    <div class="ms-auto">
+      <a href="/" class="btn-outline-nav">
+        <i class="bi bi-arrow-left me-1"></i>Back to Records
+      </a>
+    </div>
+  </div>
+</nav>
+
+<div class="main-content">
+  <div class="container" style="max-width:780px">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+      <a href="/">Patient Records</a>
+      <i class="bi bi-chevron-right mx-1"></i>
+      <span>Add New Patient</span>
+    </div>
+
+    <!-- Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-msg flash-{{ category }} mb-3">
+            <i class="bi bi-exclamation-circle me-2"></i>{{ message }}
+            <button class="flash-close" onclick="this.parentElement.remove()">×</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="form-card">
+
+      <!-- Form Header -->
+      <div class="form-card-header">
+        <div class="form-card-icon"><i class="bi bi-person-plus"></i></div>
+        <div>
+          <div class="form-card-title">Add New Patient</div>
+          <div class="form-card-desc">Enter patient details and blood test results. AI will generate health remarks automatically.</div>
+        </div>
+      </div>
+
+      <form id="patientForm" action="/add" method="POST" novalidate>
+
+        <!-- ── Personal Information ── -->
+        <div class="field-section">Personal Information</div>
+
+        <div class="mb-4">
+          <label class="field-label">Full Name <span class="req-star">*</span></label>
+          <input type="text" name="full_name" class="field-input"
+                 placeholder="e.g. Priya Sharma"
+                 value="{{ form_data.get('full_name', '') }}" required/>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="field-label">Date of Birth <span class="req-star">*</span></label>
+            <input type="date" name="dob" class="field-input"
+                   value="{{ form_data.get('dob', '') }}" required/>
+            <div class="field-hint">Cannot be today or a future date</div>
+          </div>
+          <div class="col-md-6">
+            <label class="field-label">Email Address <span class="req-star">*</span></label>
+            <input type="email" name="email" class="field-input"
+                   placeholder="e.g. patient@example.com"
+                   value="{{ form_data.get('email', '') }}" required/>
+          </div>
+        </div>
+
+        <!-- ── Blood Test Results ── -->
+        <div class="field-section">Blood Test Results</div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="field-label">Glucose <span class="req-star">*</span></label>
+            <div class="input-with-unit">
+              <input type="number" name="glucose" class="field-input"
+                     placeholder="90" step="0.1" min="0.1"
+                     value="{{ form_data.get('glucose', '') }}" required/>
+              <span class="unit-badge">mg/dL</span>
+            </div>
+            <div class="field-hint">Normal: 70–99</div>
+          </div>
+          <div class="col-md-4">
+            <label class="field-label">Haemoglobin <span class="req-star">*</span></label>
+            <div class="input-with-unit">
+              <input type="number" name="haemoglobin" class="field-input"
+                     placeholder="14.5" step="0.1" min="0.1"
+                     value="{{ form_data.get('haemoglobin', '') }}" required/>
+              <span class="unit-badge">g/dL</span>
+            </div>
+            <div class="field-hint">Normal: 12–17.5</div>
+          </div>
+          <div class="col-md-4">
+            <label class="field-label">Cholesterol <span class="req-star">*</span></label>
+            <div class="input-with-unit">
+              <input type="number" name="cholesterol" class="field-input"
+                     placeholder="180" step="0.1" min="0.1"
+                     value="{{ form_data.get('cholesterol', '') }}" required/>
+              <span class="unit-badge">mg/dL</span>
+            </div>
+            <div class="field-hint">Desirable: &lt;200</div>
+          </div>
+        </div>
+
+        <!-- AI Notice -->
+        <div class="ai-notice">
+          <i class="bi bi-robot fs-5 me-3 text-primary"></i>
+          <div>
+            <strong>AI Remarks</strong> — Once you submit, Gemini AI will analyse the blood test values
+            and automatically generate a health prediction in the <em>Remarks</em> field.
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-flex gap-3 mt-4">
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <span id="submitText"><i class="bi bi-check-circle me-2"></i>Save Patient &amp; Generate Remarks</span>
+            <span id="submitLoading" class="d-none">
+              <span class="spinner-border spinner-border-sm me-2"></span>Generating AI Remarks…
+            </span>
+          </button>
+          <a href="/" class="btn-cancel">Cancel</a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Set max DOB to yesterday
+  const dob = document.querySelector('input[name="dob"]');
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  dob.max = yesterday.toISOString().split('T')[0];
+
+  // Show loading state on submit
+  document.getElementById('patientForm').addEventListener('submit', function() {
+    document.getElementById('submitText').classList.add('d-none');
+    document.getElementById('submitLoading').classList.remove('d-none');
+    document.getElementById('submitBtn').disabled = true;
+  });
+</script>
+</body>
+</html>
