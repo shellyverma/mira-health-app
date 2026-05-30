@@ -11,7 +11,7 @@
 </head>
 <body>
 
-<!-- NAVBAR -->
+<!--NAVBAR-->
 <nav class="top-nav">
   <div class="container-fluid px-4 d-flex align-items-center">
     <div class="nav-brand">
@@ -32,14 +32,14 @@
 <div class="main-content">
   <div class="container" style="max-width:780px">
 
-    <!-- Breadcrumb -->
+    
     <div class="breadcrumb-bar">
       <a href="/">Patient Records</a>
       <i class="bi bi-chevron-right mx-1"></i>
       <span>Add New Patient</span>
     </div>
 
-    <!-- Flash -->
+    
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -53,7 +53,7 @@
 
     <div class="form-card">
 
-      <!-- Form Header -->
+      <!--Header -->
       <div class="form-card-header">
         <div class="form-card-icon"><i class="bi bi-person-plus"></i></div>
         <div>
@@ -125,7 +125,7 @@
           </div>
         </div>
 
-        <!-- AI Notice -->
+        
         <div class="ai-notice">
           <i class="bi bi-robot fs-5 me-3 text-primary"></i>
           <div>
@@ -151,12 +151,12 @@
 </div>
 
 <script>
-  // Set max DOB to yesterday
+ 
   const dob = document.querySelector('input[name="dob"]');
   const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
   dob.max = yesterday.toISOString().split('T')[0];
 
-  // Show loading state on submit
+ 
   document.getElementById('patientForm').addEventListener('submit', function() {
     document.getElementById('submitText').classList.add('d-none');
     document.getElementById('submitLoading').classList.remove('d-none');

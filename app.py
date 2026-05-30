@@ -9,9 +9,7 @@ app.secret_key = "mira_secret_key_2024"
 
 init_db()
 
-# ──────────────────────────────────────────
-# VALIDATION HELPER
-# ──────────────────────────────────────────
+# VALIDATION 
 def validate_form(data):
     errors = []
 
@@ -47,18 +45,18 @@ def validate_form(data):
     return errors
 
 
-# ──────────────────────────────────────────
+
 # READ — list all patients
-# ──────────────────────────────────────────
+
 @app.route("/")
 def index():
     patients = get_all_patients()
     return render_template("index.html", patients=patients)
 
 
-# ──────────────────────────────────────────
+
 # CREATE
-# ──────────────────────────────────────────
+
 @app.route("/add", methods=["GET", "POST"])
 def add():
     if request.method == "POST":
@@ -95,9 +93,9 @@ def add():
     return render_template("add.html", form_data={})
 
 
-# ──────────────────────────────────────────
+
 # UPDATE
-# ──────────────────────────────────────────
+
 @app.route("/edit/<int:patient_id>", methods=["GET", "POST"])
 def edit(patient_id):
     patient = get_patient_by_id(patient_id)
@@ -140,9 +138,9 @@ def edit(patient_id):
     return render_template("edit.html", patient=patient, patient_id=patient_id)
 
 
-# ──────────────────────────────────────────
+
 # DELETE
-# ──────────────────────────────────────────
+
 @app.route("/delete/<int:patient_id>", methods=["POST"])
 def delete(patient_id):
     patient = get_patient_by_id(patient_id)
@@ -152,9 +150,9 @@ def delete(patient_id):
     return redirect(url_for("index"))
 
 
-# ──────────────────────────────────────────
-# VIEW DETAILS (for modal — returns JSON)
-# ──────────────────────────────────────────
+
+# VIEW DETAILS 
+
 @app.route("/patient/<int:patient_id>")
 def patient_detail(patient_id):
     patient = get_patient_by_id(patient_id)
