@@ -1,4 +1,4 @@
-# 🏥 MIRA – Medical Intelligence Robotic Automation
+# MIRA – Medical Intelligence Robotic Automation
 
 A health prediction web application built for Task 1 of the Junior AI/ML Developer assessment.
 
@@ -11,13 +11,13 @@ A health prediction web application built for Task 1 of the Junior AI/ML Develop
 | AI/ML API | Google Gemini 1.5 Flash | Free API, excellent medical reasoning |
 
 ## Features
-- ✅ CRUD — Create, Read, Update, Delete patient records
-- ✅ AI health prediction via Gemini AI on every save/update
-- ✅ Input validation (email, DOB, positive numeric blood values)
-- ✅ Color-coded blood value indicators (normal / warning / high)
-- ✅ Full remarks view modal per patient
-- ✅ Live search/filter across all records
-- ✅ Rule-based fallback if API is unavailable
+- CRUD — Create, Read, Update, Delete patient records
+- AI health prediction via Gemini AI on every save/update
+- Input validation (email, DOB, positive numeric blood values)
+- Color-coded blood value indicators (normal / warning / high)
+- Full remarks view modal per patient
+- Live search/filter across all records
+- Rule-based fallback if API is unavailable
 
 ## Quick Start
 
